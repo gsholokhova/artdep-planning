@@ -872,6 +872,9 @@ async function apiLoad() {
     const res = await fetch(API_URL);
     const data = await res.json();
     items = (data.items || data).map(normalize);
+    const bad = items.filter(it => !it.start || !it.end).length;
+    if (bad) toast(`Записей с нераспознанными датами: ${bad} — проверьте столбцы start/end в таблице`);
+    items = items.filter(it => it.start && it.end);
     if (Array.isArray(data.people) && data.people.length) {
       PEOPLE = [
         ...data.people.map(p => ({ group: "Инхаус", name: p.name, role: p.role || "middle" })),
@@ -884,9 +887,31 @@ async function apiLoad() {
     items = demoData(); setStatus(false);
   }
 }
+function normDate(v) {
+  if (v === null || v === undefined) return "";
+  v = String(v).trim();
+  if (!v) return "";
+  let m = v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);            // ГГГГ-ММ-ДД или ISO-датавремя
+  if (m) return m[1] + "-" + m[2].padStart(2,"0") + "-" + m[3].padStart(2,"0");
+  m = v.match(/^(\d{1,2})[./](\d{1,2})[./](\d{4})/);          // ДД.ММ.ГГГГ или ДД/ММ/ГГГГ
+  if (m) return m[3] + "-" + m[2].padStart(2,"0") + "-" + m[1].padStart(2,"0");
+  // сырые JS-даты из Apps Script: "Wed May 27 2026 00:00:00 GMT+0500 (…)" — берём токены, игнорируя пояс
+  m = v.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2})\s+(\d{4})/);
+  if (m) {
+    const mo = { Jan:"01",Feb:"02",Mar:"03",Apr:"04",May:"05",Jun:"06",Jul:"07",Aug:"08",Sep:"09",Oct:"10",Nov:"11",Dec:"12" }[m[1]];
+    return m[3] + "-" + mo + "-" + m[2].padStart(2,"0");
+  }
+  const d = new Date(v);                                        // последний шанс — нативный парсер
+  if (!isNaN(d)) return toISO(d);
+  return "";
+}
 function normalize(it) {
   const o = { figma:"", freelancer:"", weekends:"", mode:"active", ...it };
   if (o.mode === "supervision") o.mode = "background";
+  o.start = normDate(o.start);
+  o.end = normDate(o.end);
+  o.weekends = String(o.weekends || "").split(",").map(normDate).filter(Boolean).join(",");
+  if (o.start && o.end && o.end < o.start) { const t = o.start; o.start = o.end; o.end = t; }
   return o;
 }
 async function apiSave(item) {
