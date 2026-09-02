@@ -23,7 +23,7 @@
     --today: #FF5526;
     --accent: #FF5526;
     --name-w: 208px;
-    --day-w: 34px;
+    --day-w: 51px;
     --radius: 8px;
   }
   html[data-theme="dark"] {
@@ -609,11 +609,19 @@
   .toast.show { transform: translateX(-50%) translateY(0); }
 
   @media (max-width: 700px) {
-    :root { --name-w: 128px; --day-w: 28px; }
+    :root { --name-w: 128px; --day-w: 42px; }
     .topbar { gap: 8px; padding: 10px 12px; }
     .brand .logo { height: 20px; }
-    .range-label { order: 9; width: 100%; min-width: 0; font-size: 12.5px; }
+    /* прячем лишнее на мобилке */
+    #navGroup, #rangeLabel, #statusPill, #refreshBtn { display: none; }
     button { padding: 6px 10px; }
+    /* «+ Проект» → просто «+», того же размера что и кнопка отпуска */
+    #addBtn .add-label { display: none; }
+    #addBtn, #absBtn {
+      padding: 0; width: 38px; height: 38px;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 18px; line-height: 1;
+    }
     .name-cell {
       padding: 8px 10px;
       flex-direction: column;
@@ -639,7 +647,7 @@
 
 <div class="topbar">
   <div class="brand"><span class="logo" role="img" aria-label="Planning"></span></div>
-  <div class="nav-group">
+  <div class="nav-group" id="navGroup">
     <button id="prevBtn" aria-label="Раньше">‹</button>
     <button id="todayBtn">Сегодня</button>
     <button id="nextBtn" aria-label="Позже">›</button>
@@ -647,9 +655,9 @@
   <div class="range-label" id="rangeLabel"></div>
   <div class="spacer"></div>
   <span class="status-pill" id="statusPill">Демо-данные</span>
-  <button id="absBtn" aria-label="Только отсутствия" title="Показать только отсутствия">🏖️</button>
   <button id="refreshBtn">Обновить</button>
-  <button class="primary" id="addBtn">+ Проект</button>
+  <button id="absBtn" aria-label="Только отсутствия" title="Показать только отсутствия">🏖️</button>
+  <button class="primary" id="addBtn"><span class="add-plus">+</span><span class="add-label">&nbsp;Проект</span></button>
 </div>
 
 <div class="board" id="board">
