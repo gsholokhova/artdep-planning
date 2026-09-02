@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -21,6 +21,7 @@
     --abs-a: #EDEDE6;
     --abs-b: #E2E2D9;
     --today: #FF5526;
+    --accent: #FF5526;
     --name-w: 208px;
     --day-w: 34px;
     --radius: 8px;
@@ -97,6 +98,7 @@
     border-color: var(--ink);
   }
   button.primary:hover { opacity: 0.88; background: var(--ink); }
+  #absBtn.on { background: var(--accent); color: #fff; border-color: var(--accent); }
   .nav-group { display: flex; gap: 6px; }
   .status-pill {
     font-size: 12px;
@@ -136,24 +138,75 @@
     min-width: var(--name-w);
     background: var(--bg);
     border-right: 1px solid var(--line-strong);
-    padding: 8px 14px 6px;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--ink-soft);
+    padding: 6px 10px 6px 14px;
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
-    gap: 8px;
+    gap: 6px;
   }
+  .corner .filter-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 9px; border-radius: 7px;
+    font-size: 13px; font-weight: 600; color: var(--ink);
+    border: 1px solid var(--line-strong); background: var(--surface);
+    max-width: calc(var(--name-w) - 44px); overflow: hidden;
+  }
+  .corner .filter-btn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .corner .filter-btn svg { flex-shrink: 0; opacity: .6; }
   .corner .mini-add {
-    width: 20px; height: 20px;
+    width: 26px; height: 26px;
     padding: 0;
-    border-radius: 6px;
-    font-size: 14px;
+    border-radius: 7px;
+    font-size: 15px;
     line-height: 1;
     color: var(--ink-soft);
+    flex-shrink: 0;
   }
+  .filter-panel {
+    position: fixed;
+    z-index: 45;
+    width: 240px;
+    max-height: 70vh;
+    overflow-y: auto;
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: 10px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.2);
+    padding: 6px;
+    display: none;
+  }
+  .filter-panel.open { display: block; }
+  .fp-all {
+    padding: 8px 10px; border-radius: 7px; cursor: pointer;
+    font-weight: 600; font-size: 13.5px;
+  }
+  .fp-all:hover { background: var(--hover); }
+  .fp-all.on { background: var(--ink); color: var(--bg); }
+  .fp-team {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 9px 10px 4px; cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft);
+  }
+  .fp-team-toggle { font-family: 'Inter', sans-serif; font-weight: 500; text-transform: none; letter-spacing: 0; font-size: 11px; }
+  .fp-team:hover .fp-team-toggle { color: var(--accent); }
+  .fp-item {
+    display: flex; align-items: center; gap: 9px;
+    padding: 6px 10px; border-radius: 7px; cursor: pointer; font-size: 13.5px;
+  }
+  .fp-item:hover { background: var(--hover); }
+  .fp-box {
+    width: 15px; height: 15px; flex-shrink: 0; border-radius: 50%;
+    border: 1.5px solid var(--line-strong); background: transparent;
+    box-sizing: border-box;
+  }
+  .fp-box.on { border-color: var(--accent); background: var(--accent); }
+  .fp-arch-title {
+    margin-top: 6px; padding: 8px 10px 4px; border-top: 1px solid var(--line);
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft);
+  }
+  .fp-arch { padding: 6px 10px; border-radius: 7px; cursor: pointer; font-size: 13px; color: var(--ink-soft); }
+  .fp-arch:hover { background: var(--hover); color: var(--ink); }
   .person-pop {
     position: fixed;
     top: 64px; left: 16px;
@@ -314,6 +367,7 @@
     position: absolute;
     height: 26px;
     border-radius: 6px;
+    border: 1.5px solid transparent;
     color: #fff;
     font-size: 12px;
     font-weight: 500;
@@ -368,12 +422,8 @@
   .bar .handle.h-start::after { left: 3px; }
   .bar .handle.h-end::after { right: 3px; }
   .bar:hover .handle::after { opacity: 1; }
-  .bar .wknd {
-    position: absolute;
-    top: 0; bottom: 0;
-    pointer-events: none;
-  }
-  .bar.bg-mode { opacity: 0.72; }
+  .person-pop .pp-edit-actions { margin-top: 8px; }
+  .person-pop .pp-edit-actions #npArchive { flex: 1; }
   .bar.planned {
     background: transparent !important;
     border: 1.5px dashed currentColor;
@@ -381,9 +431,6 @@
   }
   .bar.planned .b-link { background: color-mix(in srgb, currentColor 14%, transparent); }
   .bar.planned .handle::after { background: color-mix(in srgb, currentColor 45%, transparent); }
-  .bar.planned .wknd {
-    background: color-mix(in srgb, currentColor 35%, transparent);
-  }
   .bar.absence {
     color: var(--ink-soft);
     background: repeating-linear-gradient(135deg, var(--abs-a) 0 6px, var(--abs-b) 6px 12px) !important;
@@ -489,22 +536,9 @@
   }
   .suggest .opt:hover { background: var(--hover); }
   .suggest .opt .sw { width: 12px; height: 12px; border-radius: 4px; flex-shrink: 0; }
-  .swatches { display: flex; gap: 7px; flex-wrap: wrap; }
-  .swatch { width: 26px; height: 26px; border-radius: 7px; cursor: pointer; border: 2px solid transparent; }
+  .swatches { display: grid; grid-template-columns: repeat(6, 1fr); gap: 7px; }
+  .swatch { width: 100%; aspect-ratio: 1; height: auto; border-radius: 7px; cursor: pointer; border: 2px solid transparent; }
   .swatch.sel { border-color: var(--ink); }
-  .swatch.random {
-    background: var(--surface);
-    border: 2px dashed var(--line-strong);
-    color: var(--ink-soft);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Space Grotesk', sans-serif;
-    font-weight: 700;
-    font-size: 14px;
-  }
-  .swatch.random.filled { border-style: solid; border-color: transparent; color: #fff; }
-  .swatch.random.sel { border-color: var(--ink); }
   .type-toggle { display: flex; gap: 6px; }
   .type-toggle button { flex: 1; }
   .type-toggle button.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
@@ -613,7 +647,7 @@
   <div class="range-label" id="rangeLabel"></div>
   <div class="spacer"></div>
   <span class="status-pill" id="statusPill">Демо-данные</span>
-  <button id="themeBtn" aria-label="Переключить тему">◐</button>
+  <button id="absBtn" aria-label="Только отсутствия" title="Показать только отсутствия">🏖️</button>
   <button id="refreshBtn">Обновить</button>
   <button class="primary" id="addBtn">+ Проект</button>
 </div>
@@ -691,21 +725,31 @@
   </div>
 </aside>
 
+<div class="filter-panel" id="filterPanel"></div>
+
 <div class="person-pop" id="personPop">
-  <div class="pp-title">Новый человек</div>
+  <div class="pp-title" id="ppTitle">Новый человек</div>
   <label for="npName">Имя и фамилия</label>
   <input type="text" id="npName" placeholder="Имя Фамилия">
-  <label for="npRole">Уровень</label>
+  <label for="npTeam">Команда</label>
+  <select id="npTeam">
+    <option value="Design" selected>Design</option>
+    <option value="Creative">Creative</option>
+  </select>
+  <label for="npRole">Грейд</label>
   <select id="npRole">
-    <option value="junior">junior</option>
-    <option value="middle" selected>middle</option>
     <option value="senior">senior</option>
-    <option value="expert">expert</option>
+    <option value="middle" selected>middle</option>
+    <option value="junior">junior</option>
     <option value="director">director</option>
   </select>
   <div class="pp-actions">
     <button id="npCancel">Отмена</button>
     <button class="primary" id="npAdd">Добавить</button>
+  </div>
+  <div class="pp-actions pp-edit-actions" id="ppEditActions" style="display:none">
+    <button id="npArchive">В архив</button>
+    <button class="danger" id="npDelete">Удалить</button>
   </div>
 </div>
 
@@ -744,16 +788,46 @@ const MODE_HINT = {
 function weightOf(it) { return MODE_W[it.mode || "active"] ?? 1; }
 
 const OUTSOURCE = "Аутсорс";
-const OUTSOURCE_ENTRY = { group: "Аутсорс", name: OUTSOURCE, role: "фриланс-блок" };
+const OUTSOURCE_ENTRY = { group: "Аутсорс", name: OUTSOURCE, role: "фриланс-блок", team: "" };
+// порядок грейдов для сортировки инхауса: senior → middle → junior → director
+const GRADE_ORDER = { senior: 0, middle: 1, junior: 2, expert: 1, director: 3 };
+function gradeRank(role) { return GRADE_ORDER[role] ?? 1.5; }
 let PEOPLE = [
-  { group: "Инхаус",  name: "Ника Вечерковская", role: "senior" },
-  { group: "Инхаус",  name: "Саша Созинов",      role: "senior" },
-  { group: "Инхаус",  name: "Юля Михарева",      role: "middle" },
-  { group: "Инхаус",  name: "Полина Коровина",   role: "junior" },
+  { group: "Инхаус",  name: "Ника Вечерковская", role: "senior",   team: "Design" },
+  { group: "Инхаус",  name: "Саша Созинов",      role: "senior",   team: "Design" },
+  { group: "Инхаус",  name: "Юля Михарева",      role: "middle",   team: "Design" },
+  { group: "Инхаус",  name: "Полина Коровина",   role: "junior",   team: "Design" },
   OUTSOURCE_ENTRY,
 ];
+// инхаус всегда отсортирован по грейду
+function sortPeople() {
+  const inh = PEOPLE.filter(p => p.group === "Инхаус")
+    .sort((a, b) => gradeRank(a.role) - gradeRank(b.role) || a.name.localeCompare(b.name));
+  PEOPLE = [...inh, OUTSOURCE_ENTRY];
+}
 
-const COLORS = ["#2B5CFF","#FF6B4A","#00A876","#F0A800","#9B51E0","#FF3E8A","#0FA3B1"];
+// ── фильтр превью: множество выбранных имён. Пусто = «Все». ──
+const TEAM_LABEL = { Design: "Дизайн", Creative: "Креатив" };
+let nameFilter = new Set();
+let absOnly = false;   // показывать только отсутствия
+function personVisible(p) {
+  if (p.team === "Архив") return false;         // архив в планнинге не показываем
+  if (nameFilter.size === 0) return true;       // «Все»
+  return nameFilter.has(p.name);
+}
+// список видимых людей, сгруппированный для доски: Дизайн, Креатив, Аутсорс
+function displayGroups() {
+  const groups = [];
+  for (const teamKey of ["Design", "Creative"]) {
+    const ppl = PEOPLE.filter(p => p.group === "Инхаус" && (p.team || "Design") === teamKey && personVisible(p));
+    if (ppl.length) groups.push({ label: TEAM_LABEL[teamKey], people: ppl });
+  }
+  const out = PEOPLE.filter(p => p.group === "Аутсорс" && personVisible(p));
+  if (out.length) groups.push({ label: "Аутсорс", people: out });
+  return groups;
+}
+
+const COLORS = ["#276952", "#2F495A", "#473D3D", "#5FA96E", "#607ED1", "#61A5D5", "#64B7B3", "#768E9F", "#773557", "#807F7A", "#895D93", "#90B2CC", "#96B08F", "#9A8AD9", "#A55F5F", "#AD9992", "#B59CE0", "#C36936", "#C44646", "#CB597F", "#CEC244", "#DA82D9", "#EB9A5B", "#ED7779"];
 
 const NAME_W = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--name-w'));
 const DAY_W = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--day-w'));
@@ -819,6 +893,23 @@ function sprintRange() {
   return [toISO(s), toISO(addDays(s, SPRINT_WEEKS * 7 - 1))];
 }
 
+/* Число календарных дней отсутствия за текущий год (объединение периодов) */
+function absenceDaysThisYear(personItems) {
+  const year = today().getFullYear();
+  const yStart = year + "-01-01", yEnd = year + "-12-31";
+  const days = new Set();
+  for (const it of personItems) {
+    if (it.type !== "absence") continue;
+    let s = it.start < yStart ? yStart : it.start;
+    let e = it.end > yEnd ? yEnd : it.end;
+    if (e < s) continue;
+    let d = fromISO(s);
+    const end = fromISO(e);
+    while (d <= end) { days.add(toISO(d)); d = addDays(d, 1); }
+  }
+  return days.size;
+}
+
 /* ── расчёт занятости ─────────────────────────
    День считается рабочим для проекта, если это будний
    день (не праздник) ИЛИ выходной, отмеченный в карточке.
@@ -877,9 +968,10 @@ async function apiLoad() {
     items = items.filter(it => it.start && it.end);
     if (Array.isArray(data.people) && data.people.length) {
       PEOPLE = [
-        ...data.people.map(p => ({ group: "Инхаус", name: p.name, role: p.role || "middle" })),
+        ...data.people.map(p => ({ group: "Инхаус", name: p.name, role: p.role || "middle", team: p.team || "Design" })),
         OUTSOURCE_ENTRY,
       ];
+      sortPeople();
     }
     setStatus(true);
   } catch (e) {
@@ -926,10 +1018,10 @@ async function apiDelete(id) {
     await fetch(API_URL, { method:"POST", body: JSON.stringify({ action:"delete", id }) });
   } catch (e) { toast("Ошибка записи в таблицу"); }
 }
-async function apiSavePerson(name, role) {
+async function apiSavePerson(name, role, team) {
   if (!API_URL) return;
   try {
-    await fetch(API_URL, { method:"POST", body: JSON.stringify({ action:"upsertPerson", person:{ name, role } }) });
+    await fetch(API_URL, { method:"POST", body: JSON.stringify({ action:"upsertPerson", person:{ name, role, team: team || "Design" } }) });
   } catch (e) { toast("Ошибка записи в таблицу"); }
 }
 async function apiDeletePerson(name) {
@@ -944,12 +1036,56 @@ function setStatus(live) {
   p.classList.toggle("live", live);
 }
 
+/* ── цвет как свойство проекта ──
+   Все колбаски одного проекта одного цвета; цвет берётся из палитры
+   стабильно по названию, с учётом уже выбранного вручную. */
+let projectColors = {};
+function stableIndex(name) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  return h % COLORS.length;
+}
+function buildProjectColors() {
+  projectColors = {};
+  const byProj = {};
+  for (const it of items) {
+    if (it.type !== "project") continue;
+    (byProj[it.project] = byProj[it.project] || []).push(it);
+  }
+  const names = Object.keys(byProj).sort();
+  const used = new Set();
+  const pending = [];
+  // Проход 1: закрепляем проекты, где уже есть цвет из палитры (доминирующий)
+  for (const name of names) {
+    const counts = {};
+    for (const b of byProj[name]) if (b.color && COLORS.includes(b.color)) counts[b.color] = (counts[b.color]||0)+1;
+    const chosen = Object.keys(counts).sort((a,b)=>counts[b]-counts[a])[0];
+    if (chosen) { projectColors[name] = chosen; used.add(chosen); }
+    else pending.push(name);
+  }
+  // Проход 2: остальным — предпочтительный по хэшу, иначе ближайший свободный
+  for (const name of pending) {
+    let idx = stableIndex(name);
+    let color = COLORS[idx];
+    if (used.size < COLORS.length) {
+      let probes = 0;
+      while (used.has(color) && probes < COLORS.length) { idx = (idx+1) % COLORS.length; color = COLORS[idx]; probes++; }
+    }
+    projectColors[name] = color;
+    used.add(color);
+  }
+}
+function projectColor(it) {
+  if (it.type !== "project") return it.color || "#888";
+  return projectColors[it.project] || it.color || COLORS[stableIndex(it.project)];
+}
+
 /* ── справочник проектов ── */
 function projectDirectory() {
   const map = new Map();
   for (const it of items) {
     if (it.type !== "project") continue;
-    if (!map.has(it.project)) map.set(it.project, { name: it.project, color: it.color, figma: it.figma });
+    if (!map.has(it.project)) map.set(it.project, { name: it.project, color: projectColor(it), figma: it.figma });
     else {
       const p = map.get(it.project);
       if (!p.figma && it.figma) p.figma = it.figma;
@@ -975,6 +1111,7 @@ function computeLanes(list) {
 const LINK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M10 14L21 3m0 0h-6m6 0v6M9 4H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-4"/></svg>';
 
 function render() {
+  buildProjectColors();
   const canvas = document.getElementById("canvas");
   const dw = DAY_W();
   canvas.style.minWidth = (NAME_W() + VIEW_DAYS * dw) + "px";
@@ -985,9 +1122,13 @@ function render() {
   head.className = "head-row";
   const corner = document.createElement("div");
   corner.className = "corner";
-  corner.innerHTML = IS_TOUCH
-    ? "Команда"
-    : `Команда <button class="mini-add" id="addPersonBtn" title="Добавить человека" aria-label="Добавить человека">+</button>`;
+  const selCount = nameFilter.size;
+  const filterLabel = selCount === 0 ? "Все"
+    : (selCount === 1 ? [...nameFilter][0].split(" ")[0] : `Выбрано: ${selCount}`);
+  corner.innerHTML =
+    `<button class="filter-btn" id="filterBtn"><span>${escapeHtml(filterLabel)}</span><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>`
+    + (IS_TOUCH ? "" : `<button class="mini-add" id="addPersonBtn" title="Добавить человека" aria-label="Добавить человека">+</button>`);
+  corner.querySelector("#filterBtn").addEventListener("click", ev => { ev.stopPropagation(); toggleFilterPanel(); });
   const apb = corner.querySelector("#addPersonBtn");
   if (apb) apb.addEventListener("click", ev => { ev.stopPropagation(); openPersonPop(); });
   head.appendChild(corner);
@@ -1011,21 +1152,21 @@ function render() {
   }
   canvas.appendChild(head);
 
-  const groups = [...new Set(PEOPLE.map(p => p.group))];
   const todayISO = toISO(t0);
-  for (const g of groups) {
+  for (const grp of displayGroups()) {
     const gr = document.createElement("div");
     gr.className = "group-row";
     const gl = document.createElement("div");
     gl.className = "group-label";
-    gl.textContent = g;
+    gl.textContent = grp.label;
     gr.appendChild(gl);
     gr.appendChild(Object.assign(document.createElement("div"), { className: "group-track" }));
     canvas.appendChild(gr);
 
-    for (const p of PEOPLE.filter(x => x.group === g)) {
+    for (const p of grp.people) {
       const personItems = items.filter(it => it.person === p.name);
-      const { list, lanes } = computeLanes(personItems);
+      const barItems = absOnly ? personItems.filter(it => it.type === "absence") : personItems;
+      const { list, lanes } = computeLanes(barItems);
       const narrow = window.innerWidth <= 700;
       const rowH = Math.max(12 + lanes * 32, narrow ? 78 : 0);
 
@@ -1040,18 +1181,20 @@ function render() {
       const mainCnt = inSprint.filter(it => (it.mode || "active") !== "planned").length;
       const planCnt = inSprint.length - mainCnt;
       const onLeave = personItems.some(it => it.type === "absence" && it.start <= todayISO && it.end >= todayISO);
-      const badgeText = onLeave ? "—" : (planCnt ? `${mainCnt}+${planCnt}` : `${mainCnt}`);
-      nc.innerHTML = `<span class="nm">${p.name}<span class="role">${p.role}</span></span>
-        <span class="load-badge ${onLeave ? "" : "l"+Math.min(mainCnt,3)}">${badgeText}</span>`;
-      nc.addEventListener("click", ev => { if (ev.altKey) { ev.preventDefault(); deletePerson(p.name); } });
-      const badge = nc.querySelector(".load-badge");
-      badge.addEventListener("mouseenter", () => showTip(badge, badgeTipText(mainCnt, planCnt, onLeave)));
-      badge.addEventListener("mouseleave", hideTip);
-      badge.addEventListener("click", ev => {
-        ev.stopPropagation();
-        showTip(badge, badgeTipText(mainCnt, planCnt, onLeave));
-        setTimeout(hideTip, 3500);
-      });
+      const subLabel = p.group === "Аутсорс" ? p.role : (p.team || "");
+      let badgeText, badgeClass, badgeTitle = "";
+      if (absOnly) {
+        const days = absenceDaysThisYear(personItems);
+        badgeText = String(days);
+        badgeClass = days > 0 ? "l2" : "";
+        badgeTitle = `дней отсутствия в ${today().getFullYear()}`;
+      } else {
+        badgeText = onLeave ? "—" : (planCnt ? `${mainCnt}+${planCnt}` : `${mainCnt}`);
+        badgeClass = onLeave ? "" : "l" + Math.min(mainCnt, 3);
+      }
+      nc.innerHTML = `<span class="nm">${p.name}<span class="role">${subLabel}</span></span>
+        <span class="load-badge ${badgeClass}"${badgeTitle ? ` title="${badgeTitle}"` : ""}>${badgeText}</span>`;
+      nc.addEventListener("click", ev => { if (ev.altKey && p.group !== "Аутсорс") { ev.preventDefault(); ev.stopPropagation(); openPersonPop(p.name); } });
       row.appendChild(nc);
 
       const track = document.createElement("div");
@@ -1135,13 +1278,10 @@ function buildBar(it, dw) {
     + (it.type === "absence" ? " absence" : "")
     + (it.type === "project" && mode === "planned" ? " planned" : "")
     + (it.type === "project" && mode === "background" ? " bg-mode" : "");
-  bar.style.left = (clipL * dw + 2) + "px";
-  bar.style.width = Math.max((clipR - clipL) * dw - 4, 20) + "px";
+  bar.style.left = (clipL * dw) + "px";
+  bar.style.width = Math.max((clipR - clipL) * dw, 20) + "px";
   bar.style.top = (8 + it._lane * 32) + "px";
-  if (it.type !== "absence") {
-    if (mode === "planned") bar.style.color = it.color || "#888";
-    else bar.style.background = `color-mix(in srgb, ${it.color || "#888"} 68%, #ffffff)`;
-  }
+  applyBarFill(bar, it);
 
   const label = it.freelancer ? `${it.project} — ${it.freelancer}` : it.project;
   const meta = barMeta(it);
@@ -1152,19 +1292,6 @@ function buildBar(it, dw) {
     <span class="handle h-start"></span>
     <span class="handle h-end"></span>`;
   bar.title = `${label} · ${fmtShort(it.start)} → ${fmtShort(it.end)} · ${meta}`;
-
-  // подсветка отработанных выходных на колбаске
-  for (const wIso of weekendSet(it)) {
-    const idx = dayDiff(viewStart, fromISO(wIso));
-    if (idx < clipL || idx >= clipR) continue;
-    const ov = document.createElement("span");
-    ov.className = "wknd";
-    ov.style.left = ((idx - clipL) * dw) + "px";
-    ov.style.width = dw + "px";
-    if (it.type === "project" && mode !== "planned") ov.style.background = it.color || "#888";
-    ov.title = "Работа в выходной: " + fmtShort(wIso);
-    bar.appendChild(ov);
-  }
   if (weekendSet(it).size) bar.title += " · работа в выходные: " + [...weekendSet(it)].map(fmtShort).join(", ");
 
   const link = bar.querySelector(".b-link");
@@ -1177,6 +1304,26 @@ function buildBar(it, dw) {
     bar.addEventListener("pointerdown", ev => startDrag(ev, it, bar));
   }
   return bar;
+}
+
+/* Заливка колбаски: сплошной цвет проекта. Работа в выходные — только
+   в карточке проекта, на таймлайне разрывов нет.
+   На светлых цветах текст переключается на тёмный для читаемости. */
+function applyBarFill(el, it) {
+  const mode = it.mode || "active";
+  if (it.type === "absence") return;              // отсутствия рисуются штриховкой из CSS
+  const color = projectColor(it);
+  if (mode === "planned") { el.style.color = color; el.style.background = ""; el.style.borderColor = ""; return; }
+  if (mode === "background") {
+    // фоновый: заливка 20% + сплошная обводка в цвет проекта
+    el.style.background = `color-mix(in srgb, ${color} 20%, transparent)`;
+    el.style.borderColor = color;
+    el.style.color = "var(--ink)";                // текст в цвет темы — читается на прозрачном фоне
+  } else {
+    el.style.background = color;
+    el.style.borderColor = "";
+    el.style.color = "#fff";
+  }
 }
 
 function escapeHtml(s) { return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
@@ -1267,6 +1414,7 @@ function onDragMove(ev) {
 
   const metaEl = drag.visual.querySelector(".b-meta");
   if (metaEl) metaEl.textContent = barMeta(drag.it);
+  applyBarFill(drag.visual, drag.it);
 }
 
 async function onDragEnd(ev) {
@@ -1324,7 +1472,7 @@ function openDrawer(id) {
   document.getElementById("dupBtn").style.display = it ? "block" : "none";
 
   const sel = document.getElementById("fPerson");
-  sel.innerHTML = PEOPLE.map(p => `<option value="${p.name}">${p.name} — ${p.role}</option>`).join("");
+  sel.innerHTML = PEOPLE.map(p => `<option value="${p.name}">${p.name}${p.group === "Аутсорс" ? "" : " — " + (p.team || "")}</option>`).join("");
   sel.value = it ? it.person : PEOPLE[0].name;
 
   setFormType(it ? it.type : "project");
@@ -1335,7 +1483,7 @@ function openDrawer(id) {
   document.getElementById("fFigma").value = it ? (it.figma || "") : "";
   document.getElementById("fFreelancer").value = it ? (it.freelancer || "") : "";
   editWeekends = it ? weekendSet(it) : new Set();
-  selectColor(it && it.color ? it.color : COLORS[0]);
+  selectColor(it && it.type === "project" ? projectColor(it) : (it && it.color ? it.color : COLORS[0]));
   updateFreelancerField();
   rebuildWeekendChips();
   updateCalcLoad();
@@ -1437,23 +1585,17 @@ function selectColor(c) {
     s.classList.toggle("sel", on);
     if (on) matched = true;
   });
-  // цвет не из палитры (например, рандомный из сохранённого проекта) — показываем на рандом-свотче
-  if (!matched) {
-    const r = document.getElementById("randSwatch");
-    if (r) { r.dataset.c = c; r.style.background = c; r.classList.add("sel", "filled"); }
+  // цвет не из палитры (сохранён из старого проекта) — добавим временный свотч, чтобы он был виден и выбран
+  if (!matched && c) {
+    const box = document.getElementById("swatches");
+    const s = document.createElement("div");
+    s.className = "swatch sel";
+    s.dataset.c = c;
+    s.style.background = c;
+    s.title = "Цвет из проекта (не из палитры)";
+    s.addEventListener("click", () => selectColor(c));
+    box.appendChild(s);
   }
-}
-function randomBrightColor() {
-  const h = Math.floor(Math.random() * 360);
-  const s = 72 + Math.random() * 20;   // насыщенный
-  const l = 48 + Math.random() * 10;   // яркий, но читаемый с белым текстом
-  const f = n => {
-    const k = (n + h / 30) % 12;
-    const a = (s / 100) * Math.min(l / 100, 1 - l / 100);
-    const v = l / 100 - a * Math.max(-1, Math.min(k - 3, Math.min(9 - k, 1)));
-    return Math.round(255 * v).toString(16).padStart(2, "0");
-  };
-  return "#" + f(0) + f(8) + f(4);
 }
 function buildSwatches() {
   const box = document.getElementById("swatches");
@@ -1466,19 +1608,6 @@ function buildSwatches() {
     s.addEventListener("click", () => selectColor(c));
     box.appendChild(s);
   }
-  const r = document.createElement("div");
-  r.className = "swatch random";
-  r.id = "randSwatch";
-  r.textContent = "?";
-  r.title = "Рандомный яркий цвет — кликайте, пока не понравится";
-  r.addEventListener("click", () => {
-    const c = randomBrightColor();
-    r.style.background = c;
-    r.dataset.c = c;
-    r.classList.add("filled");
-    selectColor(c);
-  });
-  box.appendChild(r);
 }
 
 /* ── автокомплит по существующим проектам ── */
@@ -1544,9 +1673,25 @@ async function saveForm() {
   };
   const idx = items.findIndex(x => x.id === item.id);
   if (idx >= 0) items[idx] = item; else items.push(item);
+
+  // цвет — свойство проекта: перекрашиваем все колбаски этого проекта и сохраняем изменённые
+  const recolored = [];
+  if (formType === "project") {
+    const prevColor = projectColors[item.project];
+    if (item.color && item.color !== prevColor) {
+      for (const x of items) {
+        if (x.type === "project" && x.project === item.project && x.color !== item.color) {
+          x.color = item.color;
+          if (x.id !== item.id) recolored.push(x);
+        }
+      }
+    }
+  }
+
   render();
   closeDrawer();
   await apiSave(item);
+  for (const x of recolored) await apiSave(x);
   toast(API_URL ? "Сохранено в таблицу" : "Сохранено (демо-режим, без таблицы)");
 }
 async function deleteItem() {
@@ -1568,14 +1713,7 @@ function toast(msg) {
   toastTimer = setTimeout(() => t.classList.remove("show"), 2600);
 }
 
-/* ── тема: по умолчанию берём системную, кнопка ◐ переключает ── */
-if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
-  document.documentElement.dataset.theme = "dark";
-}
-function toggleTheme() {
-  const el = document.documentElement;
-  el.dataset.theme = el.dataset.theme === "dark" ? "" : "dark";
-}
+/* ── тема: всегда тёмная (задана на теге <html data-theme="dark">) ── */
 
 /* ── события ── */
 document.getElementById("prevBtn").addEventListener("click", () => { viewStart = addDays(viewStart, -7); render(); });
@@ -1583,7 +1721,12 @@ document.getElementById("nextBtn").addEventListener("click", () => { viewStart =
 document.getElementById("todayBtn").addEventListener("click", () => { viewStart = mondayOf(addDays(today(), -7)); render(); scrollToToday(); });
 document.getElementById("refreshBtn").addEventListener("click", async () => { await apiLoad(); render(); toast("Данные обновлены"); });
 document.getElementById("addBtn").addEventListener("click", () => openDrawer(null));
-document.getElementById("themeBtn").addEventListener("click", toggleTheme);
+document.getElementById("absBtn").addEventListener("click", (e) => {
+  absOnly = !absOnly;
+  e.currentTarget.classList.toggle("on", absOnly);
+  render();
+  toast(absOnly ? "Только отсутствия" : "Все проекты");
+});
 document.getElementById("overlay").addEventListener("click", closeDrawer);
 document.getElementById("saveBtn").addEventListener("click", saveForm);
 document.getElementById("deleteBtn").addEventListener("click", deleteItem);
@@ -1604,7 +1747,7 @@ document.getElementById("modeActive").addEventListener("click", () => setFormMod
 document.getElementById("modeBg").addEventListener("click", () => setFormMode("background"));
 document.getElementById("modePlan").addEventListener("click", () => setFormMode("planned"));
 
-/* удаление человека — спрятано за Option/Alt + клик по имени */
+/* удаление человека */
 async function deletePerson(name) {
   if (name === OUTSOURCE) { toast("Аутсорс-блок удалить нельзя"); return; }
   const theirs = items.filter(x => x.person === name);
@@ -1614,33 +1757,84 @@ async function deletePerson(name) {
   if (!confirm(msg)) return;
   PEOPLE = PEOPLE.filter(p => p.name !== name);
   items = items.filter(x => x.person !== name);
-  render();
+  sortPeople(); render();
   for (const t of theirs) await apiDelete(t.id);
   await apiDeletePerson(name);
   toast(`${name} — больше не в команде`);
 }
 
-/* добавление человека в команду */
-function openPersonPop() {
-  document.getElementById("npName").value = "";
-  document.getElementById("npRole").value = "middle";
+/* редактирование / добавление человека — Option+клик по имени или «+» */
+let editingPerson = null;   // null = режим добавления, иначе имя редактируемого
+
+function openPersonPop(name) {
+  editingPerson = name || null;
+  const p = name ? PEOPLE.find(x => x.name === name) : null;
+  document.getElementById("ppTitle").textContent = p ? "Профиль" : "Новый человек";
+  document.getElementById("npName").value = p ? p.name : "";
+  document.getElementById("npRole").value = p ? (p.role || "middle") : "middle";
+  document.getElementById("npTeam").value = p ? (p.team === "Creative" ? "Creative" : "Design") : "Design";
+  document.getElementById("npAdd").textContent = p ? "Сохранить" : "Добавить";
+  document.getElementById("ppEditActions").style.display = p ? "flex" : "none";
   document.getElementById("personPop").classList.add("open");
   document.getElementById("npName").focus();
 }
-function closePersonPop() { document.getElementById("personPop").classList.remove("open"); }
+function closePersonPop() {
+  document.getElementById("personPop").classList.remove("open");
+  editingPerson = null;
+}
 document.getElementById("npCancel").addEventListener("click", closePersonPop);
+
 document.getElementById("npAdd").addEventListener("click", () => {
   const name = document.getElementById("npName").value.trim();
-  if (!name) { toast("Впишите имя и фамилию"); return; }
-  if (PEOPLE.some(p => p.name === name)) { toast("Такой человек уже есть"); return; }
   const role = document.getElementById("npRole").value;
-  const idx = PEOPLE.findIndex(p => p.name === OUTSOURCE);
-  PEOPLE.splice(idx, 0, { group: "Инхаус", name, role });
-  closePersonPop();
-  render();
-  apiSavePerson(name, role);
-  toast(`${name} — в команде`);
+  const team = document.getElementById("npTeam").value;
+  if (!name) { toast("Впишите имя и фамилию"); return; }
+
+  if (editingPerson) {
+    // проверка на дубль имени (если переименовали)
+    if (name !== editingPerson && PEOPLE.some(p => p.name === name)) { toast("Такой человек уже есть"); return; }
+    const p = PEOPLE.find(x => x.name === editingPerson);
+    if (!p) { closePersonPop(); return; }
+    const oldName = p.name;
+    p.name = name; p.role = role; p.team = team;
+    // если переименовали — переносим его записи на новое имя
+    if (name !== oldName) {
+      items.forEach(it => { if (it.person === oldName) it.person = name; });
+    }
+    sortPeople(); closePersonPop(); render();
+    if (name !== oldName) {
+      apiDeletePerson(oldName);
+      items.filter(it => it.person === name).forEach(it => apiSave(it));
+    }
+    apiSavePerson(name, role, team);
+    toast(`${name} — профиль обновлён`);
+  } else {
+    if (PEOPLE.some(p => p.name === name)) { toast("Такой человек уже есть"); return; }
+    PEOPLE.push({ group: "Инхаус", name, role, team });
+    sortPeople(); closePersonPop(); render();
+    apiSavePerson(name, role, team);
+    toast(`${name} — в команде (${team})`);
+  }
 });
+
+/* Архивировать: убрать из планнинга, но не удалять — команда "Архив" (role сохраняется) */
+document.getElementById("npArchive").addEventListener("click", () => {
+  if (!editingPerson) return;
+  const p = PEOPLE.find(x => x.name === editingPerson);
+  if (!p) return;
+  p.team = "Архив";
+  sortPeople(); closePersonPop(); render();
+  apiSavePerson(p.name, p.role, "Архив");
+  toast(`${p.name} — в архиве`);
+});
+
+document.getElementById("npDelete").addEventListener("click", () => {
+  if (!editingPerson) return;
+  const name = editingPerson;
+  closePersonPop();
+  deletePerson(name);
+});
+
 document.addEventListener("click", ev => {
   const pop = document.getElementById("personPop");
   if (pop.classList.contains("open") && !pop.contains(ev.target) && ev.target.id !== "addPersonBtn") closePersonPop();
@@ -1662,6 +1856,104 @@ function scrollToToday() {
   const off = dayDiff(viewStart, today());
   board.scrollLeft = Math.max(0, NAME_W() + off * DAY_W() - board.clientWidth / 2.5);
 }
+
+/* ── выпадающий фильтр в углу ── */
+let filterOpen = false;
+function toggleFilterPanel() {
+  filterOpen = !filterOpen;
+  const panel = document.getElementById("filterPanel");
+  if (!filterOpen) { panel.classList.remove("open"); return; }
+  buildFilterPanel();
+  const btn = document.getElementById("filterBtn");
+  const r = btn.getBoundingClientRect();
+  panel.style.left = r.left + "px";
+  panel.style.top = (r.bottom + 4) + "px";
+  panel.classList.add("open");
+}
+function closeFilterPanel() {
+  filterOpen = false;
+  document.getElementById("filterPanel").classList.remove("open");
+}
+// перепозиционируем панель под кнопкой после перерисовки доски
+function repositionFilterPanel() {
+  const panel = document.getElementById("filterPanel");
+  if (!filterOpen) return;
+  const btn = document.getElementById("filterBtn");
+  if (!btn) return;
+  const r = btn.getBoundingClientRect();
+  panel.style.left = r.left + "px";
+  panel.style.top = (r.bottom + 4) + "px";
+}
+function applyFilter() {
+  render();              // доска обновляется вживую
+  buildFilterPanel();    // буллиты в панели тоже
+  repositionFilterPanel();
+}
+function buildFilterPanel() {
+  const panel = document.getElementById("filterPanel");
+  const sel = nameFilter;
+  panel.innerHTML = "";
+
+  const allRow = document.createElement("div");
+  allRow.className = "fp-all" + (sel.size === 0 ? " on" : "");
+  allRow.textContent = "Все";
+  allRow.onclick = (ev) => { ev.stopPropagation(); sel.clear(); applyFilter(); };
+  panel.appendChild(allRow);
+
+  const addSection = (label, people) => {
+    if (!people.length) return;
+    const head = document.createElement("div");
+    head.className = "fp-team";
+    const allOn = people.every(p => sel.has(p.name));
+    head.innerHTML = `<span>${label}</span><span class="fp-team-toggle">${allOn ? "снять" : "все"}</span>`;
+    head.onclick = (ev) => {
+      ev.stopPropagation();
+      const turnOn = !people.every(p => sel.has(p.name));
+      people.forEach(p => turnOn ? sel.add(p.name) : sel.delete(p.name));
+      applyFilter();
+    };
+    panel.appendChild(head);
+    for (const p of people) {
+      const row = document.createElement("label");
+      row.className = "fp-item";
+      const on = sel.has(p.name);
+      row.innerHTML = `<span class="fp-box${on ? " on" : ""}"></span><span class="fp-name">${escapeHtml(p.name)}</span>`;
+      row.onclick = (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        sel.has(p.name) ? sel.delete(p.name) : sel.add(p.name);
+        applyFilter();
+      };
+      panel.appendChild(row);
+    }
+  };
+
+  addSection("Дизайн", PEOPLE.filter(p => p.group === "Инхаус" && (p.team || "Design") === "Design"));
+  addSection("Креатив", PEOPLE.filter(p => p.group === "Инхаус" && p.team === "Creative"));
+  addSection("Аутсорс", PEOPLE.filter(p => p.group === "Аутсорс"));
+
+  const archived = PEOPLE.filter(p => p.team === "Архив");
+  if (archived.length) {
+    const sep = document.createElement("div");
+    sep.className = "fp-arch-title";
+    sep.textContent = "Архив";
+    panel.appendChild(sep);
+    for (const p of archived) {
+      const row = document.createElement("div");
+      row.className = "fp-arch";
+      row.textContent = p.name;
+      row.title = "Открыть профиль (можно вернуть в команду)";
+      row.onclick = () => { closeFilterPanel(); openPersonPop(p.name); };
+      panel.appendChild(row);
+    }
+  }
+}
+document.addEventListener("click", ev => {
+  const panel = document.getElementById("filterPanel");
+  if (filterOpen && !panel.contains(ev.target) && ev.target.id !== "filterBtn" && !ev.target.closest("#filterBtn")) {
+    closeFilterPanel();
+  }
+});
 
 /* ── старт ── */
 (async function init() {
