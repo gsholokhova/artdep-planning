@@ -287,6 +287,7 @@
   }
 
   .group-row { display: flex; position: relative; }
+  .group-row.group-gap { margin-top: 22px; box-shadow: 0 -1px 0 var(--line-strong); }
   .group-label {
     position: sticky;
     left: 0;
@@ -743,14 +744,17 @@
   <select id="npTeam">
     <option value="Design" selected>Design</option>
     <option value="Creative">Creative</option>
+    <option value="MGMT">MGMT</option>
   </select>
-  <label for="npRole">Грейд</label>
-  <select id="npRole">
-    <option value="senior">senior</option>
-    <option value="middle" selected>middle</option>
-    <option value="junior">junior</option>
-    <option value="director">director</option>
-  </select>
+  <div id="npGradeWrap">
+    <label for="npRole">Грейд</label>
+    <select id="npRole">
+      <option value="senior">senior</option>
+      <option value="middle" selected>middle</option>
+      <option value="junior">junior</option>
+      <option value="director">director</option>
+    </select>
+  </div>
   <div class="pp-actions">
     <button id="npCancel">Отмена</button>
     <button class="primary" id="npAdd">Добавить</button>
@@ -796,7 +800,7 @@ const MODE_HINT = {
 function weightOf(it) { return MODE_W[it.mode || "active"] ?? 1; }
 
 const OUTSOURCE = "Аутсорс";
-const OUTSOURCE_ENTRY = { group: "Аутсорс", name: OUTSOURCE, role: "фриланс-блок", team: "" };
+const OUTSOURCE_ENTRY = { group: "Аутсорс", name: OUTSOURCE, role: "фриланс-блок", team: "Design" };
 // порядок грейдов для сортировки инхауса: senior → middle → junior → director
 const GRADE_ORDER = { senior: 0, middle: 1, junior: 2, expert: 1, director: 3 };
 function gradeRank(role) { return GRADE_ORDER[role] ?? 1.5; }
@@ -811,11 +815,13 @@ let PEOPLE = [
 function sortPeople() {
   const inh = PEOPLE.filter(p => p.group === "Инхаус")
     .sort((a, b) => gradeRank(a.role) - gradeRank(b.role) || a.name.localeCompare(b.name));
-  PEOPLE = [...inh, OUTSOURCE_ENTRY];
+  const out = PEOPLE.filter(p => p.group === "Аутсорс" && p.name !== OUTSOURCE);
+  PEOPLE = [...inh, OUTSOURCE_ENTRY, ...out];
 }
 
 // ── фильтр превью: множество выбранных имён. Пусто = «Все». ──
-const TEAM_LABEL = { Design: "Дизайн", Creative: "Креатив" };
+const TEAM_ORDER = ["Design", "Creative", "MGMT"];
+const TEAM_LABEL = { Design: "Дизайн", Creative: "Креатив", MGMT: "MGMT" };
 let nameFilter = new Set();
 let absOnly = false;   // показывать только отсутствия
 function personVisible(p) {
@@ -823,15 +829,16 @@ function personVisible(p) {
   if (nameFilter.size === 0) return true;       // «Все»
   return nameFilter.has(p.name);
 }
-// список видимых людей, сгруппированный для доски: Дизайн, Креатив, Аутсорс
+// список видимых людей по блокам команд: Дизайн, Креатив, MGMT.
+// Внутри блока: инхаус по грейду → аутсорс этой команды.
 function displayGroups() {
   const groups = [];
-  for (const teamKey of ["Design", "Creative"]) {
-    const ppl = PEOPLE.filter(p => p.group === "Инхаус" && (p.team || "Design") === teamKey && personVisible(p));
-    if (ppl.length) groups.push({ label: TEAM_LABEL[teamKey], people: ppl });
+  for (const teamKey of TEAM_ORDER) {
+    const inh = PEOPLE.filter(p => p.group === "Инхаус" && p.team === teamKey && personVisible(p));
+    const out = PEOPLE.filter(p => p.group === "Аутсорс" && p.team === teamKey && personVisible(p));
+    const people = [...inh, ...out];
+    if (people.length) groups.push({ label: TEAM_LABEL[teamKey], people });
   }
-  const out = PEOPLE.filter(p => p.group === "Аутсорс" && personVisible(p));
-  if (out.length) groups.push({ label: "Аутсорс", people: out });
   return groups;
 }
 
@@ -975,8 +982,11 @@ async function apiLoad() {
     if (bad) toast(`Записей с нераспознанными датами: ${bad} — проверьте столбцы start/end в таблице`);
     items = items.filter(it => it.start && it.end);
     if (Array.isArray(data.people) && data.people.length) {
+      const outRow = data.people.find(p => p.name === OUTSOURCE);
+      OUTSOURCE_ENTRY.team = (outRow && outRow.team) ? outRow.team : "Design";
       PEOPLE = [
-        ...data.people.map(p => ({ group: "Инхаус", name: p.name, role: p.role || "middle", team: p.team || "Design" })),
+        ...data.people.filter(p => p.name !== OUTSOURCE)
+          .map(p => ({ group: "Инхаус", name: p.name, role: p.role || "middle", team: p.team || "Design" })),
         OUTSOURCE_ENTRY,
       ];
       sortPeople();
@@ -1161,9 +1171,11 @@ function render() {
   canvas.appendChild(head);
 
   const todayISO = toISO(t0);
+  let firstGroup = true;
   for (const grp of displayGroups()) {
     const gr = document.createElement("div");
-    gr.className = "group-row";
+    gr.className = "group-row" + (firstGroup ? "" : " group-gap");
+    firstGroup = false;
     const gl = document.createElement("div");
     gl.className = "group-label";
     gl.textContent = grp.label;
@@ -1189,7 +1201,7 @@ function render() {
       const mainCnt = inSprint.filter(it => (it.mode || "active") !== "planned").length;
       const planCnt = inSprint.length - mainCnt;
       const onLeave = personItems.some(it => it.type === "absence" && it.start <= todayISO && it.end >= todayISO);
-      const subLabel = p.group === "Аутсорс" ? p.role : (p.team || "");
+      const subLabel = p.group === "Аутсорс" ? p.role : (TEAM_LABEL[p.team] || p.team || "");
       let badgeText, badgeClass, badgeTitle = "";
       if (absOnly) {
         const days = absenceDaysThisYear(personItems);
@@ -1202,7 +1214,7 @@ function render() {
       }
       nc.innerHTML = `<span class="nm">${p.name}<span class="role">${subLabel}</span></span>
         <span class="load-badge ${badgeClass}"${badgeTitle ? ` title="${badgeTitle}"` : ""}>${badgeText}</span>`;
-      nc.addEventListener("click", ev => { if (ev.altKey && p.group !== "Аутсорс") { ev.preventDefault(); ev.stopPropagation(); openPersonPop(p.name); } });
+      nc.addEventListener("click", ev => { if (ev.altKey) { ev.preventDefault(); ev.stopPropagation(); openPersonPop(p.name); } });
       row.appendChild(nc);
 
       const track = document.createElement("div");
@@ -1480,7 +1492,7 @@ function openDrawer(id) {
   document.getElementById("dupBtn").style.display = it ? "block" : "none";
 
   const sel = document.getElementById("fPerson");
-  sel.innerHTML = PEOPLE.map(p => `<option value="${p.name}">${p.name}${p.group === "Аутсорс" ? "" : " — " + (p.team || "")}</option>`).join("");
+  sel.innerHTML = PEOPLE.map(p => `<option value="${p.name}">${p.name}${p.group === "Аутсорс" ? "" : " — " + (TEAM_LABEL[p.team] || p.team || "")}</option>`).join("");
   sel.value = it ? it.person : PEOPLE[0].name;
 
   setFormType(it ? it.type : "project");
@@ -1777,14 +1789,19 @@ let editingPerson = null;   // null = режим добавления, инач�
 function openPersonPop(name) {
   editingPerson = name || null;
   const p = name ? PEOPLE.find(x => x.name === name) : null;
-  document.getElementById("ppTitle").textContent = p ? "Профиль" : "Новый человек";
-  document.getElementById("npName").value = p ? p.name : "";
+  const isOut = p && p.group === "Аутсорс";
+  document.getElementById("ppTitle").textContent = isOut ? "Аутсорс" : (p ? "Профиль" : "Новый человек");
+  const nameInput = document.getElementById("npName");
+  nameInput.value = p ? p.name : "";
+  nameInput.readOnly = !!isOut;                    // имя аутсорс-блока не меняем
   document.getElementById("npRole").value = p ? (p.role || "middle") : "middle";
-  document.getElementById("npTeam").value = p ? (p.team === "Creative" ? "Creative" : "Design") : "Design";
+  const teamVal = p ? (["Design","Creative","MGMT"].includes(p.team) ? p.team : "Design") : "Design";
+  document.getElementById("npTeam").value = teamVal;
+  document.getElementById("npGradeWrap").style.display = isOut ? "none" : "";   // у аутсорса нет грейда
   document.getElementById("npAdd").textContent = p ? "Сохранить" : "Добавить";
-  document.getElementById("ppEditActions").style.display = p ? "flex" : "none";
+  document.getElementById("ppEditActions").style.display = (p && !isOut) ? "flex" : "none";  // архив/удаление только для инхауса
   document.getElementById("personPop").classList.add("open");
-  document.getElementById("npName").focus();
+  if (!isOut) nameInput.focus();
 }
 function closePersonPop() {
   document.getElementById("personPop").classList.remove("open");
@@ -1799,13 +1816,19 @@ document.getElementById("npAdd").addEventListener("click", () => {
   if (!name) { toast("Впишите имя и фамилию"); return; }
 
   if (editingPerson) {
-    // проверка на дубль имени (если переименовали)
-    if (name !== editingPerson && PEOPLE.some(p => p.name === name)) { toast("Такой человек уже есть"); return; }
     const p = PEOPLE.find(x => x.name === editingPerson);
     if (!p) { closePersonPop(); return; }
+    // аутсорс-блок: меняем только команду
+    if (p.group === "Аутсорс") {
+      p.team = team;
+      closePersonPop(); render();
+      apiSavePerson(OUTSOURCE, "фриланс-блок", team);
+      toast(`Аутсорс — ${TEAM_LABEL[team] || team}`);
+      return;
+    }
+    if (name !== editingPerson && PEOPLE.some(x => x.name === name)) { toast("Такой человек уже есть"); return; }
     const oldName = p.name;
     p.name = name; p.role = role; p.team = team;
-    // если переименовали — переносим его записи на новое имя
     if (name !== oldName) {
       items.forEach(it => { if (it.person === oldName) it.person = name; });
     }
@@ -1821,7 +1844,7 @@ document.getElementById("npAdd").addEventListener("click", () => {
     PEOPLE.push({ group: "Инхаус", name, role, team });
     sortPeople(); closePersonPop(); render();
     apiSavePerson(name, role, team);
-    toast(`${name} — в команде (${team})`);
+    toast(`${name} — в команде (${TEAM_LABEL[team] || team})`);
   }
 });
 
@@ -1936,9 +1959,13 @@ function buildFilterPanel() {
     }
   };
 
-  addSection("Дизайн", PEOPLE.filter(p => p.group === "Инхаус" && (p.team || "Design") === "Design"));
-  addSection("Креатив", PEOPLE.filter(p => p.group === "Инхаус" && p.team === "Creative"));
-  addSection("Аутсорс", PEOPLE.filter(p => p.group === "Аутсорс"));
+  const teamMembers = (teamKey) => [
+    ...PEOPLE.filter(p => p.group === "Инхаус" && p.team === teamKey),
+    ...PEOPLE.filter(p => p.group === "Аутсорс" && p.team === teamKey),
+  ];
+  addSection("Дизайн", teamMembers("Design"));
+  addSection("Креатив", teamMembers("Creative"));
+  addSection("MGMT", teamMembers("MGMT"));
 
   const archived = PEOPLE.filter(p => p.team === "Архив");
   if (archived.length) {
