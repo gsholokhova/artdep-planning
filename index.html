@@ -830,12 +830,16 @@ function personVisible(p) {
   return nameFilter.has(p.name);
 }
 // список видимых людей по блокам команд: Дизайн, Креатив, MGMT.
-// Внутри блока: инхаус по грейду → аутсорс этой команды.
+// Внутри блока: инхаус по грейду → аутсорс. Аутсорс-дорожка общая и
+// показывается под каждой рабочей командой (Дизайн и Креатив), но не под MGMT.
+const OUTSOURCE_TEAMS = ["Design", "Creative"];
 function displayGroups() {
   const groups = [];
   for (const teamKey of TEAM_ORDER) {
     const inh = PEOPLE.filter(p => p.group === "Инхаус" && p.team === teamKey && personVisible(p));
-    const out = PEOPLE.filter(p => p.group === "Аутсорс" && p.team === teamKey && personVisible(p));
+    const out = OUTSOURCE_TEAMS.includes(teamKey)
+      ? PEOPLE.filter(p => p.group === "Аутсорс" && personVisible(p))
+      : [];
     const people = [...inh, ...out];
     if (people.length) groups.push({ label: TEAM_LABEL[teamKey], people });
   }
@@ -1214,7 +1218,7 @@ function render() {
       }
       nc.innerHTML = `<span class="nm">${p.name}<span class="role">${subLabel}</span></span>
         <span class="load-badge ${badgeClass}"${badgeTitle ? ` title="${badgeTitle}"` : ""}>${badgeText}</span>`;
-      nc.addEventListener("click", ev => { if (ev.altKey) { ev.preventDefault(); ev.stopPropagation(); openPersonPop(p.name); } });
+      nc.addEventListener("click", ev => { if (ev.altKey && p.group !== "Аутсорс") { ev.preventDefault(); ev.stopPropagation(); openPersonPop(p.name); } });
       row.appendChild(nc);
 
       const track = document.createElement("div");
@@ -1961,7 +1965,7 @@ function buildFilterPanel() {
 
   const teamMembers = (teamKey) => [
     ...PEOPLE.filter(p => p.group === "Инхаус" && p.team === teamKey),
-    ...PEOPLE.filter(p => p.group === "Аутсорс" && p.team === teamKey),
+    ...(OUTSOURCE_TEAMS.includes(teamKey) ? PEOPLE.filter(p => p.group === "Аутсорс") : []),
   ];
   addSection("Дизайн", teamMembers("Design"));
   addSection("Креатив", teamMembers("Creative"));
